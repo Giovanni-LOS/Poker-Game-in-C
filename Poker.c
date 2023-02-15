@@ -22,6 +22,10 @@ int main()
     drawCardsToPlayer(histogramOfDrawCards, player3);
     drawCardsToPlayer(histogramOfDrawCards, player4);
     drawCardsToPlayer(histogramOfDrawCards, player5);
+    for (size_t i = 0; i < 5; i++)
+    {
+        printf("\n%d %d %d %d %d\n ", player1[i], player2[i], player3[i], player4[i], player5[i]);
+    }
 
     return 0;
 }
