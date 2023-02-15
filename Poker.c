@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #define FACES 13
-#define SUITS 5
+#define SUITS 4
 #define CARDS 52
 
 void shuffle(unsigned int deckShuffle[][FACES]);
