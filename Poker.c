@@ -44,7 +44,8 @@ int main()
     shuffle(deck);
 
     puts("POKER THE GAME by GigiLucas");
-    system("pause");
+    puts("Press any key to continue...");
+    getchar();
 
     drawCardsToPlayer(histogramOfDrawCards, player1Cards);
     drawCardsToPlayer(histogramOfDrawCards, player2Cards);
