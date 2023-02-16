@@ -24,7 +24,7 @@ int main()
     srand(time(NULL));
     shuffle(deck);
     struct player_chips player1Chips, player2Chips, player3Chips, player4Chips, player5Chips;
-    unsigned int pot;
+    unsigned int pot = 0;
     startOfTheGame(&pot, player1Chips, player2Chips, player3Chips, player4Chips, player5Chips);
     const char *suits[SUITS] = {"Hearts", "Diamond", "Clubs", "Spades"};
     const char *faces[FACES] = {"Deuce", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace"};
@@ -63,7 +63,6 @@ void shuffle(unsigned int deckShuffle[][FACES])
 void startOfTheGame(unsigned int *potStart, struct player_chips p1, struct player_chips p2, struct player_chips p3, struct player_chips p4, struct player_chips p5)
 {
     // Setup of the Variables.
-    *potStart = 0;
     p1.coinValue1 = 10;
     p2.coinValue1 = 10;
     p3.coinValue1 = 10;
@@ -85,6 +84,7 @@ void startOfTheGame(unsigned int *potStart, struct player_chips p1, struct playe
     p3.coinValue1--;
     p4.coinValue1--;
     p5.coinValue1--;
+    *potStart += 5;
 }
 
 void drawCardsToPlayer(int *histogram, int *playerCardsToDraw)
