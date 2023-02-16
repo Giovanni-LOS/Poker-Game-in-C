@@ -16,7 +16,7 @@ struct player_chips
 typedef struct player_chips player_chips;
 
 void shuffle(unsigned int deckShuffle[][FACES]);
-unsigned int startOfTheGame(player_chips *p1, player_chips *p2, player_chips *p3, player_chips *p4, player_chips *p5);
+void initializePlayerChips(player_chips *player_chips);
 void drawCardsToPlayer(int *histogram, int *player);
 void handValue(int *playerCards, int *playerHandValue, unsigned int deckValuation[][FACES]);
 
@@ -33,7 +33,13 @@ int main()
     player_chips player1Chips, player2Chips, player3Chips, player4Chips, player5Chips;
     int player1HandValue = 0, player2HandValue = 0, player3HandValue = 0, player4HandValue = 0, player5HandValue = 0;
 
-    unsigned int pot = startOfTheGame(&player1Chips, &player2Chips, &player3Chips, &player4Chips, &player5Chips);
+    initializePlayerChips(&player1Chips);
+    initializePlayerChips(&player2Chips);
+    initializePlayerChips(&player3Chips);
+    initializePlayerChips(&player4Chips);
+    initializePlayerChips(&player5Chips);
+
+    unsigned int pot = 5;
     srand(time(NULL));
 
     shuffle(deck);
@@ -68,34 +74,13 @@ void shuffle(unsigned int deckShuffle[][FACES])
     }
 }
 
-unsigned int startOfTheGame(player_chips *p1, player_chips *p2, player_chips *p3, player_chips *p4, player_chips *p5)
+void initializePlayerChips(player_chips *player_chips)
 {
     // Setup of the Variables.
-    p1->coinValue1 = 10;
-    p2->coinValue1 = 10;
-    p3->coinValue1 = 10;
-    p4->coinValue1 = 10;
-    p5->coinValue1 = 10;
-
-    p1->coinValue5 = 4;
-    p2->coinValue5 = 4;
-    p3->coinValue5 = 4;
-    p4->coinValue5 = 4;
-    p5->coinValue5 = 4;
-
-    p1->coinValue10 = 2;
-    p2->coinValue10 = 2;
-    p3->coinValue10 = 2;
-    p4->coinValue10 = 2;
-    p5->coinValue10 = 2;
     // First round entry price
-    p1->coinValue1--;
-    p2->coinValue1--;
-    p3->coinValue1--;
-    p4->coinValue1--;
-    p5->coinValue1--;
-
-    return 5;
+    player_chips->coinValue1 = 9;
+    player_chips->coinValue5 = 4;
+    player_chips->coinValue10 = 2;
 }
 
 void drawCardsToPlayer(int *histogram, int *playerCardsToDraw)
