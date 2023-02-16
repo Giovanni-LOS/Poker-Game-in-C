@@ -24,7 +24,6 @@ int main()
 {
     int player1Cards[5] = {0}, player2Cards[5] = {0}, player3Cards[5] = {0}, player4Cards[5] = {0}, player5Cards[5] = {0};
 
-    unsigned int deck[CARDS];
     unsigned int deck[SUITS][FACES] = {0};
     int histogramOfDrawCards[CARDS] = {0};
     const char *suits[SUITS] = {"Hearts", "Diamond", "Clubs", "Spades"};
@@ -32,6 +31,7 @@ int main()
     const char *hands[HANDS] = {"High Card", "Pair", "Two Pair's", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush", "Royal Flush"};
     player_chips player1Chips, player2Chips, player3Chips, player4Chips, player5Chips;
     int player1HandValue = 0, player2HandValue = 0, player3HandValue = 0, player4HandValue = 0, player5HandValue = 0;
+    unsigned int pot = 5;
 
     initializePlayerChips(&player1Chips);
     initializePlayerChips(&player2Chips);
@@ -39,10 +39,12 @@ int main()
     initializePlayerChips(&player4Chips);
     initializePlayerChips(&player5Chips);
 
-    unsigned int pot = 5;
     srand(time(NULL));
 
     shuffle(deck);
+
+    puts("POKER THE GAME by GigiLucas");
+    system("pause");
 
     drawCardsToPlayer(histogramOfDrawCards, player1Cards);
     drawCardsToPlayer(histogramOfDrawCards, player2Cards);
