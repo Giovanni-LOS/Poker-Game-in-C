@@ -6,7 +6,15 @@
 #define CARDS 52
 #define HANDS 10
 
+struct player_chips
+{
+    int coinValue1;
+    int coinValue5;
+    int coinValue10;
+};
+
 void shuffle(unsigned int deckShuffle[][FACES]);
+void startOfTheGame(unsigned int *potStart, struct player_chips p1, struct player_chips p2, struct player_chips p3, struct player_chips p4, struct player_chips p5);
 void drawCardsToPlayer(int *histogram, int *player);
 void handValue(int *playerCards, int *playerHandValue, unsigned int deckValuation[][FACES]);
 
@@ -15,6 +23,9 @@ int main()
     unsigned int deck[SUITS][FACES] = {0};
     srand(time(NULL));
     shuffle(deck);
+    struct player_chips player1Chips, player2Chips, player3Chips, player4Chips, player5Chips;
+    unsigned int pot;
+    startOfTheGame(&pot, player1Chips, player2Chips, player3Chips, player4Chips, player5Chips);
     const char *suits[SUITS] = {"Hearts", "Diamond", "Clubs", "Spades"};
     const char *faces[FACES] = {"Deuce", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace"};
     const char *hands[HANDS] = {"High Card", "Pair", "Two Pair's", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush", "Royal Flush"};
@@ -47,6 +58,33 @@ void shuffle(unsigned int deckShuffle[][FACES])
         } while (deckShuffle[row][column] != 0);
         deckShuffle[row][column] = i;
     }
+}
+
+void startOfTheGame(unsigned int *potStart, struct player_chips p1, struct player_chips p2, struct player_chips p3, struct player_chips p4, struct player_chips p5)
+{
+    // Setup of the Variables.
+    *potStart = 0;
+    p1.coinValue1 = 10;
+    p2.coinValue1 = 10;
+    p3.coinValue1 = 10;
+    p4.coinValue1 = 10;
+    p5.coinValue1 = 10;
+    p1.coinValue5 = 4;
+    p2.coinValue5 = 4;
+    p3.coinValue5 = 4;
+    p4.coinValue5 = 4;
+    p5.coinValue5 = 4;
+    p1.coinValue10 = 2;
+    p2.coinValue10 = 2;
+    p3.coinValue10 = 2;
+    p4.coinValue10 = 2;
+    p5.coinValue10 = 2;
+    // First round entry price.
+    p1.coinValue1--;
+    p2.coinValue1--;
+    p3.coinValue1--;
+    p4.coinValue1--;
+    p5.coinValue1--;
 }
 
 void drawCardsToPlayer(int *histogram, int *playerCardsToDraw)
