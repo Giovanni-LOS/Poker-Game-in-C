@@ -44,7 +44,7 @@ int main()
     shuffle(deck);
 
     puts("POKER THE GAME by GigiLucas");
-    puts("Press any key to continue...");
+    puts("Press enter to continue...");
     getchar();
 
     drawCardsToPlayer(histogramOfDrawCards, player1Cards);
@@ -58,6 +58,8 @@ int main()
     handValue(player3Cards, &player3HandValue, deck);
     handValue(player4Cards, &player4HandValue, deck);
     handValue(player5Cards, &player5HandValue, deck);
+
+    puts("Your hand is :");
 
     return 0;
 }
