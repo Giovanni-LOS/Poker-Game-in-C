@@ -20,6 +20,8 @@ void initializePlayerChips(player_chips *player_chips);
 void drawCardsToPlayer(int *histogram, int *player);
 void handValue(int *playerCards, int *playerHandValue, unsigned int deckValuation[][FACES]);
 void showPlayerCards(int playerCards[], unsigned int deckCards[][FACES], const char *cardSuit[], const char *cardFace[]);
+void showPlayerHandValue(int playerHandValue, const char *handValues[]);
+void printDeckAndHandForDebug(unsigned int deckDebug[][FACES], int playerCardsDebug[]);
 
 int main()
 {
@@ -61,6 +63,10 @@ int main()
     handValue(player5Cards, &player5HandValue, deck);
 
     showPlayerCards(player1Cards, deck, suits, faces);
+
+    showPlayerHandValue(player1HandValue, hands);
+
+    // printDeckAndHandForDebug(deck, player1Cards);
 
     return 0;
 }
@@ -117,6 +123,10 @@ void handValue(int *playerCards, int *playerHandValue, unsigned int deckValuatio
         {
             for (size_t j = 0; j < FACES; j++)
             {
+                if (playerCardsCounter == 5)
+                {
+                    break;
+                }
                 if (deckValuation[i][j] == playerCards[playerCardsCounter])
                 {
                     histogramFaces[j]++;
@@ -135,10 +145,12 @@ void handValue(int *playerCards, int *playerHandValue, unsigned int deckValuatio
             if (*playerHandValue == 1)
             {
                 *playerHandValue = 2;
+                continue;
             }
             if (*playerHandValue == 3)
             {
                 *playerHandValue = 6;
+                continue;
             }
             *playerHandValue = 1;
         }
@@ -147,6 +159,7 @@ void handValue(int *playerCards, int *playerHandValue, unsigned int deckValuatio
             if (*playerHandValue == 1)
             {
                 *playerHandValue = 6;
+                continue;
             }
             *playerHandValue = 3;
         }
@@ -210,4 +223,28 @@ void showPlayerCards(int playerCards[], unsigned int deckCards[][FACES], const c
         }
     }
     puts("###");
+}
+
+void showPlayerHandValue(int playerHandValue, const char *handValues[])
+{
+    puts("###");
+    printf("Your hand have a %s.\n", handValues[playerHandValue]);
+    puts("###");
+}
+
+void printDeckAndHandForDebug(unsigned int deckDebug[][FACES], int playerCardsDebug[])
+{
+    for (size_t i = 0; i < SUITS; i++)
+    {
+        puts("");
+        for (size_t j = 0; j < FACES; j++)
+        {
+            printf("%d ", deckDebug[i][j]);
+        }
+    }
+    puts("");
+    for (size_t i = 0; i < 5; i++)
+    {
+        printf("%d ", playerCardsDebug[i]);
+    }
 }
