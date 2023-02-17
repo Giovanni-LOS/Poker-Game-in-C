@@ -19,6 +19,7 @@ void shuffle(unsigned int deckShuffle[][FACES]);
 void initializePlayerChips(player_chips *player_chips);
 void drawCardsToPlayer(int *histogram, int *player);
 void handValue(int *playerCards, int *playerHandValue, unsigned int deckValuation[][FACES]);
+void showPlayerCards(int playerCards[], unsigned int deckCards[][FACES], const char *cardSuit[], const char *cardFace[]);
 
 int main()
 {
@@ -59,14 +60,14 @@ int main()
     handValue(player4Cards, &player4HandValue, deck);
     handValue(player5Cards, &player5HandValue, deck);
 
-    puts("Your hand is :");
+    showPlayerCards(player1Cards, deck, suits, faces);
 
     return 0;
 }
 
 void shuffle(unsigned int deckShuffle[][FACES])
 {
-    for (size_t i = 1; i <= CARDS; i++)
+    for (size_t i = 0; i < CARDS; i++)
     {
         size_t row;
         size_t column;
@@ -189,4 +190,24 @@ void handValue(int *playerCards, int *playerHandValue, unsigned int deckValuatio
             }
         }
     }
+}
+
+void showPlayerCards(int playerCards[], unsigned int deckCards[][FACES], const char *cardSuit[], const char *cardFace[])
+{
+    puts("###");
+    puts("Your hand is:");
+    for (size_t card = 0; card < 5; card++)
+    {
+        for (size_t i = 0; i < SUITS; i++)
+        {
+            for (size_t j = 0; j < FACES; j++)
+            {
+                if (deckCards[i][j] == playerCards[card])
+                {
+                    printf("%lu -> %s of %s <-\n", card + 1, cardFace[j], cardSuit[i]);
+                }
+            }
+        }
+    }
+    puts("###");
 }
