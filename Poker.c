@@ -9,9 +9,9 @@
 
 struct player_chips
 {
-    int coinValue1;
-    int coinValue5;
-    int coinValue10;
+    unsigned int coinValue1;
+    unsigned int coinValue5;
+    unsigned int coinValue10;
 };
 typedef struct player_chips player_chips;
 
@@ -20,13 +20,15 @@ void initializePlayerChips(player_chips *player_chips);
 void drawCardsToPlayer(int *histogram, int *player);
 void handValue(int *playerCards, int *playerHandValue, unsigned int deckValuation[][FACES]);
 void showPlayerCards(int playerCards[], unsigned int deckCards[][FACES], const char *cardSuit[], const char *cardFace[]);
-void showPlayerHandValue(int playerHandValue, const char *handValues[]);
+void showPlayerHandValue(int playerHandValue, const char *handValues[], unsigned int potValue);
 void printDeckAndHandForDebug(unsigned int deckDebug[][FACES], int playerCardsDebug[]);
+int sumPlayerChips(player_chips playerChipSum, int *sumOfPlayerChips);
+void potInitialBet(player_chips *playerChipInitialBet, unsigned int *potPtr);
 
 int main()
 {
     int player1Cards[5] = {0}, player2Cards[5] = {0}, player3Cards[5] = {0}, player4Cards[5] = {0}, player5Cards[5] = {0};
-
+    int player1ChipsSum = 0, player2ChipsSum = 0, player3ChipsSum = 0, player4ChipsSum = 0, player5ChipsSum = 0;
     unsigned int deck[SUITS][FACES] = {0};
     int histogramOfDrawCards[CARDS] = {0};
     const char *suits[SUITS] = {"Hearts", "Diamond", "Clubs", "Spades"};
@@ -34,7 +36,7 @@ int main()
     const char *hands[HANDS] = {"High Card", "Pair", "Two Pair's", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush", "Royal Flush"};
     player_chips player1Chips, player2Chips, player3Chips, player4Chips, player5Chips;
     int player1HandValue = 0, player2HandValue = 0, player3HandValue = 0, player4HandValue = 0, player5HandValue = 0;
-    unsigned int pot = 5;
+    unsigned int pot = 0;
 
     initializePlayerChips(&player1Chips);
     initializePlayerChips(&player2Chips);
@@ -44,27 +46,39 @@ int main()
 
     srand(time(NULL));
 
-    shuffle(deck);
-
     puts("POKER THE GAME by GigiLucas");
     puts("Press enter to continue...");
     getchar();
 
-    drawCardsToPlayer(histogramOfDrawCards, player1Cards);
-    drawCardsToPlayer(histogramOfDrawCards, player2Cards);
-    drawCardsToPlayer(histogramOfDrawCards, player3Cards);
-    drawCardsToPlayer(histogramOfDrawCards, player4Cards);
-    drawCardsToPlayer(histogramOfDrawCards, player5Cards);
+    while (sumPlayerChips(player1Chips, &player1ChipsSum) || sumPlayerChips(player2Chips, &player2ChipsSum) || sumPlayerChips(player3Chips, &player3ChipsSum) || sumPlayerChips(player4Chips, &player4ChipsSum) || sumPlayerChips(player5Chips, &player5ChipsSum))
+    {
 
-    handValue(player1Cards, &player1HandValue, deck);
-    handValue(player2Cards, &player2HandValue, deck);
-    handValue(player3Cards, &player3HandValue, deck);
-    handValue(player4Cards, &player4HandValue, deck);
-    handValue(player5Cards, &player5HandValue, deck);
+        shuffle(deck);
 
-    showPlayerCards(player1Cards, deck, suits, faces);
+        potInitialBet(&player1Chips, &pot);
+        potInitialBet(&player2Chips, &pot);
+        potInitialBet(&player3Chips, &pot);
+        potInitialBet(&player4Chips, &pot);
+        potInitialBet(&player5Chips, &pot);
 
-    showPlayerHandValue(player1HandValue, hands);
+        drawCardsToPlayer(histogramOfDrawCards, player1Cards);
+        drawCardsToPlayer(histogramOfDrawCards, player2Cards);
+        drawCardsToPlayer(histogramOfDrawCards, player3Cards);
+        drawCardsToPlayer(histogramOfDrawCards, player4Cards);
+        drawCardsToPlayer(histogramOfDrawCards, player5Cards);
+
+        handValue(player1Cards, &player1HandValue, deck);
+        handValue(player2Cards, &player2HandValue, deck);
+        handValue(player3Cards, &player3HandValue, deck);
+        handValue(player4Cards, &player4HandValue, deck);
+        handValue(player5Cards, &player5HandValue, deck);
+
+        showPlayerCards(player1Cards, deck, suits, faces);
+
+        showPlayerHandValue(player1HandValue, hands, pot);
+
+        getchar();
+    }
 
     // printDeckAndHandForDebug(deck, player1Cards);
 
@@ -90,7 +104,7 @@ void initializePlayerChips(player_chips *player_chips)
 {
     // Setup of the Variables.
     // First round entry price
-    player_chips->coinValue1 = 9;
+    player_chips->coinValue1 = 10;
     player_chips->coinValue5 = 4;
     player_chips->coinValue10 = 2;
 }
@@ -225,10 +239,11 @@ void showPlayerCards(int playerCards[], unsigned int deckCards[][FACES], const c
     puts("###");
 }
 
-void showPlayerHandValue(int playerHandValue, const char *handValues[])
+void showPlayerHandValue(int playerHandValue, const char *handValues[], unsigned int potValue)
 {
     puts("###");
     printf("Your hand have a %s.\n", handValues[playerHandValue]);
+    printf("The pot value is $%d.\n", potValue);
     puts("###");
 }
 
@@ -246,5 +261,48 @@ void printDeckAndHandForDebug(unsigned int deckDebug[][FACES], int playerCardsDe
     for (size_t i = 0; i < 5; i++)
     {
         printf("%d ", playerCardsDebug[i]);
+    }
+}
+
+int sumPlayerChips(player_chips playerChipSum, int *sumOfPlayerChips)
+{
+    *sumOfPlayerChips = playerChipSum.coinValue1 + (playerChipSum.coinValue5 * 5) + (playerChipSum.coinValue10 * 10);
+    if (*sumOfPlayerChips == 250)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+void potInitialBet(player_chips *playerChipInitialBet, unsigned int *potPtr)
+{
+    if (playerChipInitialBet->coinValue5 == 0)
+    {
+        if (playerChipInitialBet->coinValue10 > 0)
+        {
+            playerChipInitialBet->coinValue10--;
+            playerChipInitialBet->coinValue5 += 2;
+        }
+    }
+    if (playerChipInitialBet->coinValue1 == 0)
+    {
+        if (playerChipInitialBet->coinValue5 > 0)
+        {
+            playerChipInitialBet->coinValue5--;
+            playerChipInitialBet->coinValue1 += 5;
+        }
+    }
+    if (playerChipInitialBet->coinValue1 > 0)
+    {
+        playerChipInitialBet->coinValue1--;
+        *potPtr += 1;
+    }
+    if (playerChipInitialBet->coinValue5 == 0 && playerChipInitialBet->coinValue1 == 0 && playerChipInitialBet->coinValue10 == 0)
+    {
+        puts("Some player do not have Chips");
+        getchar();
     }
 }
