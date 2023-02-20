@@ -25,6 +25,7 @@ void printDeckAndHandForDebug(unsigned int deckDebug[][FACES], int playerCardsDe
 int sumPlayerChips(player_chips playerChipSum, int *sumOfPlayerChips);
 void potInitialBet(player_chips *playerChipInitialBet, unsigned int *potPtr);
 void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRoundBet, player_chips *playerChipsRound, unsigned int *potRound);
+void printCurrentRoundStatus(unsigned int potStatus, int personalRoundStatus, player_chips *playerChipsStatus);
 
 int main()
 {
@@ -81,7 +82,11 @@ int main()
 
         showPlayerHandValue(player1HandValue, hands, pot);
 
+        printCurrentRoundStatus(pot, personalBet, &player1Chips);
+
         betRoundPlayer(&player1HoundIn, &betTotal, &personalBet, &player1Chips, &pot);
+
+        printCurrentRoundStatus(pot, personalBet, &player1Chips);
 
         getchar();
     }
@@ -381,27 +386,104 @@ void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRou
         }
         if (playerRoute == 2)
         {
+            int sumChips = playerChipsRound->coinValue1 + (playerChipsRound->coinValue5 * 5) + (playerChipsRound->coinValue10 * 10);
+            if ((*totalBet - *personalRoundBet) >= sumChips)
+            {
+                puts("You do not have enough chips to bet/raise. This is an all in.");
+                playerChipsRound->coinValue1 = 0;
+                playerChipsRound->coinValue5 = 0;
+                playerChipsRound->coinValue10 = 0;
+                *potRound += sumChips;
+                *personalRoundBet += sumChips;
+                return;
+            }
+            puts("You are bet/raise how much?");
+            int bet;
+            scanf("%d", &bet);
+            while (bet + (*totalBet - *personalRoundBet) > sumChips)
+            {
+                puts("You can't bet/raise that amount, try again:");
+                scanf("%d", &bet);
+            }
+            int difT = (*totalBet - *personalRoundBet) + bet;
+            int dif1 = 0;
+            int dif5 = 0;
+            int dif10 = 0;
+            if (difT >= 10)
+            {
+                dif1 = difT % 10;
+                dif10 = (difT - dif1) / 10;
+            }
+            else
+            {
+                dif1 = difT;
+            }
+            if (dif1 > 5)
+            {
+                dif1 -= 5;
+                dif5 += 1;
+            }
+            if (playerChipsRound->coinValue1 >= dif1)
+            {
+                playerChipsRound->coinValue1 -= dif1;
+                *potRound += dif1;
+            }
+            else
+            {
+                playerChipsRound->coinValue1 = 0;
+            }
+            if (playerChipsRound->coinValue5 >= dif5)
+            {
+                playerChipsRound->coinValue5 -= dif5;
+                *potRound += dif5 * 5;
+            }
+            if (playerChipsRound->coinValue10 < dif10)
+            {
+                while (playerChipsRound->coinValue10 < dif10)
+                {
+                    dif10--;
+                    dif5 += 2;
+                }
+                while (playerChipsRound->coinValue5 < dif5)
+                {
+                    dif5--;
+                    dif1 += 5;
+                }
+                while (playerChipsRound->coinValue1 < dif1)
+                {
+                    dif1--;
+                }
+                if (playerChipsRound->coinValue1 >= dif1)
+                {
+                    playerChipsRound->coinValue1 -= dif1;
+                    *potRound += dif1;
+                }
+                if (playerChipsRound->coinValue5 >= dif5)
+                {
+                    playerChipsRound->coinValue5 -= dif5;
+                    *potRound += dif5 * 5;
+                }
+            }
+            if (playerChipsRound->coinValue10 >= dif10)
+            {
+                playerChipsRound->coinValue10 -= dif10;
+                *potRound += dif10 * 10;
+            }
+            *personalRoundBet += (*totalBet - *personalRoundBet) + bet;
+            *totalBet += bet;
+            return;
+        }
+        if (playerRoute == 3)
+        {
+            puts("You fold.");
+            *playerHoundIn = 1;
             return;
         }
     }
 }
 
-/*if (*totalBet != *personalRoundBet)
+void printCurrentRoundStatus(unsigned int potStatus, int personalRoundStatus, player_chips *playerChipsStatus)
 {
+    int sumChips = playerChipsStatus->coinValue1 + (playerChipsStatus->coinValue5 * 5) + (playerChipsStatus->coinValue10 * 10);
+    printf("The pot is $%d.\nThe current money put in is $%d.\nYou have left in balance $%d\n", potStatus, personalRoundStatus + 1, sumChips);
 }
-return;
-
-if (playerRoute == 2)
-{
-    if (*totalBet - *personalRoundBet >)
-
-        puts("What is the amount you whant to raise/bet ?");
-    printf("You have $%d.", sumChips);
-    printf("Current round bet is %d.", *totalBet);
-    printf("Current personal round bet is %d.", *personalRoundBet);
-    int bet = 0;
-    scanf("%d", &bet);
-    if (bet + *totalBet >= sumChips)
-    {
-    }
-}*/
