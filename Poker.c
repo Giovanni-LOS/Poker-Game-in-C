@@ -24,14 +24,15 @@ void showPlayerHandValue(int playerHandValue, const char *handValues[], unsigned
 void printDeckAndHandForDebug(unsigned int deckDebug[][FACES], int playerCardsDebug[]);
 int sumPlayerChips(player_chips playerChipSum, int *sumOfPlayerChips);
 void potInitialBet(player_chips *playerChipInitialBet, unsigned int *potPtr);
-void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRoundBet, player_chips *playerChipsRound, unsigned int *potRound);
-void printCurrentRoundStatus(unsigned int potStatus, int personalRoundStatus, player_chips *playerChipsStatus);
+void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRoundBet, player_chips *playerChipsRound, unsigned int *potRound, int *endOfBet, int *foldI);
+void printCurrentRoundStatus(unsigned int potStatus, int personalRoundStatus, player_chips *playerChipsStatus, unsigned int call);
+void betRoundNpc(int *playerHoundIn, unsigned int *totalBet, int *personalRoundBet, player_chips *playerChipsRound, unsigned int *potRound, int npc, int *endOfBet, int *foldI);
 
 int main()
 {
     int player1Cards[5] = {0}, player2Cards[5] = {0}, player3Cards[5] = {0}, player4Cards[5] = {0}, player5Cards[5] = {0};
     int player1ChipsSum = 0, player2ChipsSum = 0, player3ChipsSum = 0, player4ChipsSum = 0, player5ChipsSum = 0;
-    int personalBet = 0;
+    int personal1Bet = 0, personal2Bet = 0, personal3Bet = 0, personal4Bet = 0, personal5Bet = 0;
     int player1HoundIn = 0, player2HoundIn = 0, player3HoundIn = 0, player4HoundIn = 0, player5HoundIn = 0;
     unsigned int deck[SUITS][FACES] = {0};
     int histogramOfDrawCards[CARDS] = {0};
@@ -42,6 +43,8 @@ int main()
     int player1HandValue = 0, player2HandValue = 0, player3HandValue = 0, player4HandValue = 0, player5HandValue = 0;
     unsigned int pot = 0;
     unsigned int betTotal = 0;
+    int endBet = 0;
+    int foldIndex = 0;
 
     initializePlayerChips(&player1Chips);
     initializePlayerChips(&player2Chips);
@@ -82,12 +85,45 @@ int main()
 
         showPlayerHandValue(player1HandValue, hands, pot);
 
-        printCurrentRoundStatus(pot, personalBet, &player1Chips);
+        printCurrentRoundStatus(pot, personal1Bet, &player1Chips, betTotal);
 
-        betRoundPlayer(&player1HoundIn, &betTotal, &personalBet, &player1Chips, &pot);
+        puts("#### INICIO DO BET ####");
+        do
+        {
+            betRoundPlayer(&player1HoundIn, &betTotal, &personal1Bet, &player1Chips, &pot, &endBet, &foldIndex);
+            printCurrentRoundStatus(pot, personal1Bet, &player1Chips, betTotal);
+            if (endBet + foldIndex >= 5)
+            {
+                break;
+            }
+            getchar();
+            betRoundNpc(&player2HoundIn, &betTotal, &personal2Bet, &player2Chips, &pot, 2, &endBet, &foldIndex);
+            printCurrentRoundStatus(pot, personal2Bet, &player2Chips, betTotal);
+            if (endBet + foldIndex >= 5)
+            {
+                break;
+            }
+            getchar();
+            betRoundNpc(&player3HoundIn, &betTotal, &personal3Bet, &player3Chips, &pot, 3, &endBet, &foldIndex);
+            printCurrentRoundStatus(pot, personal3Bet, &player3Chips, betTotal);
+            if (endBet + foldIndex >= 5)
+            {
+                break;
+            }
+            getchar();
+            betRoundNpc(&player4HoundIn, &betTotal, &personal4Bet, &player4Chips, &pot, 4, &endBet, &foldIndex);
+            printCurrentRoundStatus(pot, personal4Bet, &player4Chips, betTotal);
+            if (endBet + foldIndex >= 5)
+            {
+                break;
+            }
+            getchar();
+            betRoundNpc(&player5HoundIn, &betTotal, &personal5Bet, &player5Chips, &pot, 5, &endBet, &foldIndex);
+            printCurrentRoundStatus(pot, personal5Bet, &player5Chips, betTotal);
+            getchar();
+        } while (endBet + foldIndex < 5);
 
-        printCurrentRoundStatus(pot, personalBet, &player1Chips);
-
+        puts("#### FIM DO BET ####");
         getchar();
     }
 
@@ -318,7 +354,7 @@ void potInitialBet(player_chips *playerChipInitialBet, unsigned int *potPtr)
     }
 }
 
-void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRoundBet, player_chips *playerChipsRound, unsigned int *potRound)
+void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRoundBet, player_chips *playerChipsRound, unsigned int *potRound, int *endOfBet, int *foldI)
 {
     if (*playerHoundIn == 0)
     {
@@ -334,6 +370,7 @@ void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRou
         {
             if (*personalRoundBet == *totalBet)
             {
+                *endOfBet += 1;
                 return;
             }
             int sumChips = playerChipsRound->coinValue1 + (playerChipsRound->coinValue5 * 5) + (playerChipsRound->coinValue10 * 10);
@@ -343,45 +380,62 @@ void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRou
                 playerChipsRound->coinValue5 = 0;
                 playerChipsRound->coinValue10 = 0;
                 *potRound += sumChips;
+                *personalRoundBet += (*totalBet - *personalRoundBet);
+                *endOfBet += 1;
                 return;
             }
             int difT = *totalBet - *personalRoundBet;
             int dif1 = 0;
             int dif5 = 0;
             int dif10 = 0;
-            if (difT >= 10)
+            if (playerChipsRound->coinValue10 < dif10)
             {
-                dif1 = difT % 10;
-                dif10 = (difT - dif1) / 10;
+                while (playerChipsRound->coinValue10 < dif10)
+                {
+                    dif10--;
+                    dif5 += 2;
+                }
+                while (playerChipsRound->coinValue5 < dif5)
+                {
+                    dif5--;
+                    dif1 += 5;
+                }
+                if (playerChipsRound->coinValue1 >= dif1)
+                {
+                    playerChipsRound->coinValue1 -= dif1;
+                    *potRound += dif1;
+                }
+                if (playerChipsRound->coinValue5 >= dif5)
+                {
+                    playerChipsRound->coinValue5 -= dif5;
+                    *potRound += dif5 * 5;
+                }
+                if (playerChipsRound->coinValue10 >= dif10)
+                {
+                    playerChipsRound->coinValue10 -= dif10;
+                    *potRound += dif10 * 10;
+                }
             }
             else
             {
-                dif1 = difT;
+                if (playerChipsRound->coinValue1 >= dif1)
+                {
+                    playerChipsRound->coinValue1 -= dif1;
+                    *potRound += dif1;
+                }
+                if (playerChipsRound->coinValue5 >= dif5)
+                {
+                    playerChipsRound->coinValue5 -= dif5;
+                    *potRound += dif5 * 5;
+                }
+                if (playerChipsRound->coinValue10 >= dif10)
+                {
+                    playerChipsRound->coinValue10 -= dif10;
+                    *potRound += dif10 * 10;
+                }
             }
-            if (dif1 > 5)
-            {
-                dif1 -= 5;
-                dif5 += 1;
-            }
-            if (playerChipsRound->coinValue1 >= dif1)
-            {
-                playerChipsRound->coinValue1 -= dif1;
-                *potRound += dif1;
-            }
-            else
-            {
-                playerChipsRound->coinValue1 = 0;
-            }
-            if (playerChipsRound->coinValue5 >= dif5)
-            {
-                playerChipsRound->coinValue5 -= dif5;
-                *potRound += dif5 * 5;
-            }
-            if (playerChipsRound->coinValue10 >= dif10)
-            {
-                playerChipsRound->coinValue10 -= dif10;
-                *potRound += dif10 * 10;
-            }
+            *personalRoundBet += (*totalBet - *personalRoundBet);
+            *endOfBet += 1;
             return;
         }
         if (playerRoute == 2)
@@ -395,6 +449,7 @@ void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRou
                 playerChipsRound->coinValue10 = 0;
                 *potRound += sumChips;
                 *personalRoundBet += sumChips;
+                *endOfBet += 1;
                 return;
             }
             puts("You are bet/raise how much?");
@@ -423,19 +478,116 @@ void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRou
                 dif1 -= 5;
                 dif5 += 1;
             }
-            if (playerChipsRound->coinValue1 >= dif1)
+            if (playerChipsRound->coinValue10 < dif10)
             {
-                playerChipsRound->coinValue1 -= dif1;
-                *potRound += dif1;
+                while (playerChipsRound->coinValue10 < dif10)
+                {
+                    dif10--;
+                    dif5 += 2;
+                }
+                while (playerChipsRound->coinValue5 < dif5)
+                {
+                    dif5--;
+                    dif1 += 5;
+                }
+                if (playerChipsRound->coinValue1 >= dif1)
+                {
+                    playerChipsRound->coinValue1 -= dif1;
+                    *potRound += dif1;
+                }
+                if (playerChipsRound->coinValue5 >= dif5)
+                {
+                    playerChipsRound->coinValue5 -= dif5;
+                    *potRound += dif5 * 5;
+                }
+                if (playerChipsRound->coinValue10 >= dif10)
+                {
+                    playerChipsRound->coinValue10 -= dif10;
+                    *potRound += dif10 * 10;
+                }
             }
             else
             {
-                playerChipsRound->coinValue1 = 0;
+                if (playerChipsRound->coinValue1 >= dif1)
+                {
+                    playerChipsRound->coinValue1 -= dif1;
+                    *potRound += dif1;
+                }
+                if (playerChipsRound->coinValue5 >= dif5)
+                {
+                    playerChipsRound->coinValue5 -= dif5;
+                    *potRound += dif5 * 5;
+                }
+                if (playerChipsRound->coinValue10 >= dif10)
+                {
+                    playerChipsRound->coinValue10 -= dif10;
+                    *potRound += dif10 * 10;
+                }
             }
-            if (playerChipsRound->coinValue5 >= dif5)
+
+            *personalRoundBet += (*totalBet - *personalRoundBet) + bet;
+            *totalBet += bet;
+            *endOfBet = 1;
+            return;
+        }
+        if (playerRoute == 3)
+        {
+            puts("You fold.");
+            *playerHoundIn = 1;
+            *foldI += 1;
+            return;
+        }
+    }
+}
+
+void printCurrentRoundStatus(unsigned int potStatus, int personalRoundStatus, player_chips *playerChipsStatus, unsigned int call)
+{
+    int sumChips = playerChipsStatus->coinValue1 + (playerChipsStatus->coinValue5 * 5) + (playerChipsStatus->coinValue10 * 10);
+    printf("The pot is $%d.\nThe current money put in is $%d.\nYou have left in balance $%d\nThe minimum call is %d\n", potStatus, personalRoundStatus + 1, sumChips, call);
+}
+
+void betRoundNpc(int *playerHoundIn, unsigned int *totalBet, int *personalRoundBet, player_chips *playerChipsRound, unsigned int *potRound, int npc, int *endOfBet, int *foldI)
+{
+    if (*playerHoundIn == 0)
+    {
+        int playerRoute = rand() % 100;
+
+        if (playerRoute <= 70)
+        {
+            printf("Player %d entrou no call/check\n", npc);
+            if (*personalRoundBet == *totalBet)
             {
-                playerChipsRound->coinValue5 -= dif5;
-                *potRound += dif5 * 5;
+                *endOfBet += 1;
+                return;
+            }
+            int sumChips = playerChipsRound->coinValue1 + (playerChipsRound->coinValue5 * 5) + (playerChipsRound->coinValue10 * 10);
+            if ((*totalBet - *personalRoundBet) >= sumChips)
+            {
+                playerChipsRound->coinValue1 = 0;
+                playerChipsRound->coinValue5 = 0;
+                playerChipsRound->coinValue10 = 0;
+                *potRound += sumChips;
+                *personalRoundBet += (*totalBet - *personalRoundBet);
+                *endOfBet += 1;
+                return;
+            }
+            int difT = *totalBet - *personalRoundBet;
+            int dif1 = 0;
+            int dif5 = 0;
+            int dif10 = 0;
+            if (difT >= 10)
+            {
+                dif1 = difT % 10;
+                dif10 = (difT - dif1) / 10;
+            }
+            else
+            {
+                dif1 = difT;
+            }
+            if (dif1 > 5)
+            {
+                dif1 -= 5;
+                dif5 += 1;
             }
             if (playerChipsRound->coinValue10 < dif10)
             {
@@ -449,9 +601,89 @@ void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRou
                     dif5--;
                     dif1 += 5;
                 }
-                while (playerChipsRound->coinValue1 < dif1)
+                if (playerChipsRound->coinValue1 >= dif1)
                 {
-                    dif1--;
+                    playerChipsRound->coinValue1 -= dif1;
+                    *potRound += dif1;
+                }
+                if (playerChipsRound->coinValue5 >= dif5)
+                {
+                    playerChipsRound->coinValue5 -= dif5;
+                    *potRound += dif5 * 5;
+                }
+                if (playerChipsRound->coinValue10 >= dif10)
+                {
+                    playerChipsRound->coinValue10 -= dif10;
+                    *potRound += dif10 * 10;
+                }
+            }
+            else
+            {
+                if (playerChipsRound->coinValue1 >= dif1)
+                {
+                    playerChipsRound->coinValue1 -= dif1;
+                    *potRound += dif1;
+                }
+                if (playerChipsRound->coinValue5 >= dif5)
+                {
+                    playerChipsRound->coinValue5 -= dif5;
+                    *potRound += dif5 * 5;
+                }
+                if (playerChipsRound->coinValue10 >= dif10)
+                {
+                    playerChipsRound->coinValue10 -= dif10;
+                    *potRound += dif10 * 10;
+                }
+            }
+            *personalRoundBet += (*totalBet - *personalRoundBet);
+            *endOfBet += 1;
+            return;
+        }
+        if (playerRoute > 70 && playerRoute <= 85)
+        {
+            printf("Player %d entrou no bet/raise.\n", npc);
+            int sumChips = playerChipsRound->coinValue1 + (playerChipsRound->coinValue5 * 5) + (playerChipsRound->coinValue10 * 10);
+            if ((*totalBet - *personalRoundBet) >= sumChips)
+            {
+                playerChipsRound->coinValue1 = 0;
+                playerChipsRound->coinValue5 = 0;
+                playerChipsRound->coinValue10 = 0;
+                *potRound += sumChips;
+                *personalRoundBet += sumChips;
+                *endOfBet += 1;
+                return;
+            }
+            int bet = 1 + rand() % (sumChips - (*totalBet - *personalRoundBet));
+            int difT = (*totalBet - *personalRoundBet) + bet;
+            int dif1 = 0;
+            int dif5 = 0;
+            int dif10 = 0;
+            if (difT >= 10)
+            {
+                dif1 = difT % 10;
+                dif10 = (difT - dif1) / 10;
+            }
+            else
+            {
+                dif1 = difT;
+            }
+            if (dif1 > 5)
+            {
+                dif1 -= 5;
+                dif5 += 1;
+            }
+            // printf("%d %d %d %d\n", difT, dif1, dif5, dif10);
+            if (playerChipsRound->coinValue10 < dif10)
+            {
+                while (playerChipsRound->coinValue10 < dif10)
+                {
+                    dif10--;
+                    dif5 += 2;
+                }
+                while (playerChipsRound->coinValue5 < dif5)
+                {
+                    dif5--;
+                    dif1 += 5;
                 }
                 if (playerChipsRound->coinValue1 >= dif1)
                 {
@@ -463,27 +695,41 @@ void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRou
                     playerChipsRound->coinValue5 -= dif5;
                     *potRound += dif5 * 5;
                 }
+                if (playerChipsRound->coinValue10 >= dif10)
+                {
+                    playerChipsRound->coinValue10 -= dif10;
+                    *potRound += dif10 * 10;
+                }
             }
-            if (playerChipsRound->coinValue10 >= dif10)
+            else
             {
-                playerChipsRound->coinValue10 -= dif10;
-                *potRound += dif10 * 10;
+                if (playerChipsRound->coinValue1 >= dif1)
+                {
+                    playerChipsRound->coinValue1 -= dif1;
+                    *potRound += dif1;
+                }
+                if (playerChipsRound->coinValue5 >= dif5)
+                {
+                    playerChipsRound->coinValue5 -= dif5;
+                    *potRound += dif5 * 5;
+                }
+                if (playerChipsRound->coinValue10 >= dif10)
+                {
+                    playerChipsRound->coinValue10 -= dif10;
+                    *potRound += dif10 * 10;
+                }
             }
             *personalRoundBet += (*totalBet - *personalRoundBet) + bet;
             *totalBet += bet;
+            *endOfBet = 1;
             return;
         }
-        if (playerRoute == 3)
+        if (playerRoute > 85)
         {
-            puts("You fold.");
+            printf("Player %d entrou no fold\n", npc);
             *playerHoundIn = 1;
+            *foldI += 1;
             return;
         }
     }
-}
-
-void printCurrentRoundStatus(unsigned int potStatus, int personalRoundStatus, player_chips *playerChipsStatus)
-{
-    int sumChips = playerChipsStatus->coinValue1 + (playerChipsStatus->coinValue5 * 5) + (playerChipsStatus->coinValue10 * 10);
-    printf("The pot is $%d.\nThe current money put in is $%d.\nYou have left in balance $%d\n", potStatus, personalRoundStatus + 1, sumChips);
 }
