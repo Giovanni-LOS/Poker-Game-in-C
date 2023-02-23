@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #define FACES 13
@@ -23,7 +24,7 @@ void showPlayerCards(int playerCards[], unsigned int deckCards[][FACES], const c
 void showPlayerHandValue(int playerHandValue, const char *handValues[], unsigned int potValue);
 void printDeckAndHandForDebug(unsigned int deckDebug[][FACES], int playerCardsDebug[]);
 int sumPlayerChips(player_chips playerChipSum, int *sumOfPlayerChips);
-void potInitialBet(player_chips *playerChipInitialBet, unsigned int *potPtr);
+void potInitialBet(player_chips *playerChipInitialBet, unsigned int *potPtr, int *houndIn);
 void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRoundBet, player_chips *playerChipsRound, unsigned int *potRound, int *endOfBet, int *foldI);
 void printCurrentRoundStatus(unsigned int potStatus, int personalRoundStatus, player_chips *playerChipsStatus, unsigned int call);
 void betRoundNpc(int *playerHoundIn, unsigned int *totalBet, int *personalRoundBet, player_chips *playerChipsRound, unsigned int *potRound, int npc, int *endOfBet, int *foldI);
@@ -64,11 +65,11 @@ int main()
 
         shuffle(deck);
 
-        potInitialBet(&player1Chips, &pot);
-        potInitialBet(&player2Chips, &pot);
-        potInitialBet(&player3Chips, &pot);
-        potInitialBet(&player4Chips, &pot);
-        potInitialBet(&player5Chips, &pot);
+        potInitialBet(&player1Chips, &pot, &player1HoundIn);
+        potInitialBet(&player2Chips, &pot, &player2HoundIn);
+        potInitialBet(&player3Chips, &pot, &player3HoundIn);
+        potInitialBet(&player4Chips, &pot, &player4HoundIn);
+        potInitialBet(&player5Chips, &pot, &player5HoundIn);
 
         drawCardsToPlayer(histogramOfDrawCards, player1Cards);
         drawCardsToPlayer(histogramOfDrawCards, player2Cards);
@@ -90,28 +91,32 @@ int main()
         do
         {
             printCurrentRoundStatus(pot, personal1Bet, &player1Chips, betTotal);
+            getchar();
             betRoundPlayer(&player1HoundIn, &betTotal, &personal1Bet, &player1Chips, &pot, &endBet, &foldIndex);
             if (endBet + foldIndex >= 5)
             {
                 break;
             }
+            getchar();
             betRoundNpc(&player2HoundIn, &betTotal, &personal2Bet, &player2Chips, &pot, 2, &endBet, &foldIndex);
             if (endBet + foldIndex >= 5)
             {
                 break;
             }
+            getchar();
             betRoundNpc(&player3HoundIn, &betTotal, &personal3Bet, &player3Chips, &pot, 3, &endBet, &foldIndex);
             if (endBet + foldIndex >= 5)
             {
                 break;
             }
+            getchar();
             betRoundNpc(&player4HoundIn, &betTotal, &personal4Bet, &player4Chips, &pot, 4, &endBet, &foldIndex);
             if (endBet + foldIndex >= 5)
             {
                 break;
             }
+            getchar();
             betRoundNpc(&player5HoundIn, &betTotal, &personal5Bet, &player5Chips, &pot, 5, &endBet, &foldIndex);
-
         } while (endBet + foldIndex < 5);
 
         puts("#### END OF THE BET ####");
@@ -120,10 +125,23 @@ int main()
 
         theRoundWinner(player1HoundIn, player2HoundIn, player3HoundIn, player4HoundIn, player5HoundIn, &player1HandValue, &player2HandValue, &player3HandValue, &player4HandValue, &player5HandValue, pot, &player1Chips, &player2Chips, &player3Chips, &player4Chips, &player5Chips);
 
+        memset(deck, 0, sizeof(deck));
+        memset(histogramOfDrawCards, 0, sizeof(histogramOfDrawCards));
+        memset(player1Cards, 0, sizeof(player1Cards));
+        memset(player2Cards, 0, sizeof(player2Cards));
+        memset(player3Cards, 0, sizeof(player3Cards));
+        memset(player4Cards, 0, sizeof(player4Cards));
+        memset(player5Cards, 0, sizeof(player5Cards));
+        player1ChipsSum = 0,
+        player2ChipsSum = 0, player3ChipsSum = 0, player4ChipsSum = 0, player5ChipsSum = 0;
+        personal1Bet = 0, personal2Bet = 0, personal3Bet = 0, personal4Bet = 0, personal5Bet = 0;
+        player1HoundIn = 0, player2HoundIn = 0, player3HoundIn = 0, player4HoundIn = 0, player5HoundIn = 0;
+        player1HandValue = 0, player2HandValue = 0, player3HandValue = 0, player4HandValue = 0, player5HandValue = 0;
+        pot = 0, betTotal = 0, endBet = 0, foldIndex = 0;
         getchar();
     }
-
-    // printDeckAndHandForDebug(deck, player1Cards);
+    puts("Someone win's.");
+    printDeckAndHandForDebug(deck, player1Cards);
 
     return 0;
 }
@@ -320,7 +338,7 @@ int sumPlayerChips(player_chips playerChipSum, int *sumOfPlayerChips)
     }
 }
 
-void potInitialBet(player_chips *playerChipInitialBet, unsigned int *potPtr)
+void potInitialBet(player_chips *playerChipInitialBet, unsigned int *potPtr, int *houndIn)
 {
     if (playerChipInitialBet->coinValue5 == 0)
     {
@@ -345,8 +363,7 @@ void potInitialBet(player_chips *playerChipInitialBet, unsigned int *potPtr)
     }
     if (playerChipInitialBet->coinValue5 == 0 && playerChipInitialBet->coinValue1 == 0 && playerChipInitialBet->coinValue10 == 0)
     {
-        puts("Some player do not have Chips");
-        getchar();
+        *houndIn = 2;
     }
 }
 
@@ -448,7 +465,7 @@ void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRou
                 *endOfBet += 1;
                 return;
             }
-            puts("You are bet/raise how much?");
+            puts("How much are you betting/raising?");
             int bet;
             scanf("%d", &bet);
             while (bet + (*totalBet - *personalRoundBet) > sumChips)
@@ -533,6 +550,12 @@ void betRoundPlayer(int *playerHoundIn, unsigned int *totalBet, int *personalRou
             *foldI += 1;
             return;
         }
+    }
+    if (*playerHoundIn == 2)
+    {
+        *playerHoundIn += 1;
+        *foldI += 1;
+        return;
     }
 }
 
@@ -730,6 +753,12 @@ void betRoundNpc(int *playerHoundIn, unsigned int *totalBet, int *personalRoundB
             *foldI += 1;
             return;
         }
+    }
+    if (*playerHoundIn == 2)
+    {
+        *playerHoundIn += 1;
+        *foldI += 1;
+        return;
     }
 }
 
